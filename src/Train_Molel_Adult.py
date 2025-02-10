@@ -59,8 +59,8 @@ X = df.drop(columns=['income'])
 y = df['income']
 
 # Balance the dataset using both over- and under-sampling
-ros = RandomOverSampler(sampling_strategy=0.5, random_state=42)  # Oversample minority to 50% of majority
-rus = RandomUnderSampler(sampling_strategy=0.7, random_state=42)  # Undersample majority to 70%
+ros = RandomOverSampler(sampling_strategy=0.5, random_state=42)  
+rus = RandomUnderSampler(sampling_strategy=0.7, random_state=42)  
 X_resampled, y_resampled = ros.fit_resample(X, y)
 X_resampled, y_resampled = rus.fit_resample(X_resampled, y_resampled)
 
@@ -80,6 +80,7 @@ scaler = StandardScaler()
 x_train_scaled = scaler.fit_transform(x_train)
 x_test_scaled = scaler.transform(x_test)
 
+
 # Initialize and train XGBoost classifier
 xgb_model = xgb.XGBClassifier(
     n_estimators=200,  
@@ -90,12 +91,19 @@ xgb_model = xgb.XGBClassifier(
     random_state=42
 )
 
-xgb_model.fit(x_train_scaled, y_train)
+# Create pipeline
+pipe = Pipeline([
+    ('scaler', StandardScaler()), 
+    ('classifier', xgb_model)  
+])
+
+# Train the pipeline
+pipe.fit(x_train, y_train)
 
 # Evaluate model
-test_accuracy = xgb_model.score(x_test_scaled, y_test)
+test_accuracy = pipe.score(x_test, y_test)
 print(f"Test Accuracy: {test_accuracy:.4f}")
 
 # Save model and scaler
-joblib.dump(xgb_model, r'C:\Users\ayaaa\Downloads\xgb_balanced_model.pkl')
+joblib.dump(pipe, r'C:\Users\ayaaa\Downloads\xgb_balanced_model.pkl')
 joblib.dump(scaler, r'C:\Users\ayaaa\Downloads\scaler.pkl')
