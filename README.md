@@ -157,16 +157,3 @@ python train_model.py
 ---
 
 
-## 👤 Author  
-
-- **Your Name**  
-- 📧 **Email:** [your.email@example.com](mailto:your.email@example.com)  
-- 🖥 **GitHub:** [github.com/your-username](https://github.com/your-username)  
-
----
-
-## 📜 License  
-
-This project is licensed under the **MIT License**.  
-
-
