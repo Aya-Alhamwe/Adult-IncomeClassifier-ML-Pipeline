@@ -1,14 +1,21 @@
 import numpy as np
 import pandas as pd
+
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.model_selection import train_test_split
+
 from imblearn.over_sampling import RandomOverSampler
 from imblearn.under_sampling import RandomUnderSampler
+
 import xgboost as xgb
 import joblib
 
 # Load the dataset
 df = pd.read_csv(r"C:\Users\ayaaa\Downloads\adult.csv")
+
+print(df.shape)
+
+print(df.head())
 
 # Convert income column to binary values
 df["income"] = df["income"].map({">50K": 1, "<=50K": 0})
@@ -16,12 +23,30 @@ df["income"] = df["income"].map({">50K": 1, "<=50K": 0})
 # Replace '?' with NaN
 df.replace('?', np.nan, inplace=True)
 
+print(df.isnull().sum())
+
+missing_values_percentage = df.isnull().mean() * 100
+
+missing_values_percentage_sorted = missing_values_percentage.sort_values(ascending = False)
+
+print(missing_values_percentage_sorted)
+
+
 # Fill missing values with the mode
 for col in ['occupation', 'workclass', 'native.country']:
     df[col].fillna(df[col].mode()[0], inplace=True)
 
+print(df.isnull().sum())
+
+print(df.duplicated().sum())
+
+
 # Remove duplicate rows
 df.drop_duplicates(inplace=True)
+
+print(df.shape) 
+
+#Model Train
 
 # Encode categorical columns
 label_encoder = LabelEncoder()
@@ -57,10 +82,10 @@ x_test_scaled = scaler.transform(x_test)
 
 # Initialize and train XGBoost classifier
 xgb_model = xgb.XGBClassifier(
-    n_estimators=200,  # Increased boosting rounds
-    max_depth=6,       # Slightly deeper trees
-    learning_rate=0.05, # Reduced step size for better learning
-    subsample=0.8,      # Reduce overfitting
+    n_estimators=200,  
+    max_depth=6,      
+    learning_rate=0.05, 
+    subsample=0.8,     
     colsample_bytree=0.8,
     random_state=42
 )
