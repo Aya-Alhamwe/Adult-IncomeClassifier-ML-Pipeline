@@ -4,4 +4,4 @@ pandas
 scikit-learn
 uvicorn
 xgboost
-multipart
+python-multipart
