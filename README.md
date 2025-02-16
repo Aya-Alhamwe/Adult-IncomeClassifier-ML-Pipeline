@@ -1,6 +1,9 @@
 # 💰 Salary Prediction Web Application 🌟
 
-This project is a web application built with FastAPI that predicts whether a user's salary is above or below $50K💵 based on work-related details
+🚀 **This application is live on Render!**
+- 🌐 [Visit the live application here](https://adultproject.onrender.com)
+
+This project is a web application built with FastAPI that predicts whether a user's salary is above or below $50K💵 based on work-related details.
 
 ## 🚀 Features
 - 🖥️ Interactive web interface for user input.
@@ -70,10 +73,12 @@ uvicorn main:app --host 0.0.0.0 --port $PORT
 
 4. **🚀 Deploy and access the web app from the provided URL.**
 
+### 🌐 Live Application
+- The application is successfully deployed on Render and can be accessed here: [Salary Predictor](https://adultproject.onrender.com)
+
 ## ⚠️ Important Notes
 - 🗂️ Ensure `xgb_balanced_model.pkl` and `scaler.pkl` are present in the root directory.
 - 📁 Adjust the file paths if necessary.
 - 🖼️ The app uses basic dropdowns and numeric inputs; consider enhancing for better UX.
 
 🎯 **Enjoy Predicting Salaries!** 💼💵
-
