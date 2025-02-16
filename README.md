@@ -1,7 +1,6 @@
 # 💰 Salary Prediction Web Application 🌟
 
-🚀 **This application is live on Render!**
-- 🌐 [Visit the live application here](https://adultproject.onrender.com)
+🚀 **This application is deploy and live on Render!**
 
 This project is a web application built with FastAPI that predicts whether a user's salary is above or below $50K💵 based on work-related details.
 
