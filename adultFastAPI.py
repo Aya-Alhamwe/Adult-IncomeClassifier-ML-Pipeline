@@ -1,14 +1,12 @@
 from fastapi import FastAPI, Form
 from fastapi.responses import HTMLResponse
 import joblib
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
 app = FastAPI()
 
 # Load the pre-trained model and scaler
-model = joblib.load(r'xgb_balanced_model.pkl')
-scaler = joblib.load(r'scaler.pkl')
+model = joblib.load(r'C:\Users\ayaaa\Downloads\task\xgb_balanced_model.pkl')
+scaler = joblib.load(r'C:\Users\ayaaa\Downloads\task\scaler.pkl')
 
 # Define the form to collect user data
 @app.get("/", response_class=HTMLResponse)
