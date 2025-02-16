@@ -3,10 +3,8 @@ from fastapi.responses import HTMLResponse
 import joblib
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from mangum import Mangum
 
 app = FastAPI()
-handler = Mangum(app)
 
 # Load the pre-trained model and scaler
 model = joblib.load(r'C:\Users\ayaaa\Downloads\task\xgb_balanced_model.pkl')
