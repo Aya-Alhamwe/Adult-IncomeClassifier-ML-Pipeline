@@ -134,5 +134,5 @@ print(classification_report(y_test, y_pred))
 print(confusion_matrix(y_test, y_pred))
 
 # Save the trained model and column transformer for later use
-joblib.dump(svm_model, r"C:\Users\ayaaa\Downloads\svm_income_model.pkl")
-joblib.dump(column_transformed, r"C:\Users\ayaaa\Downloads\column_transformed.pkl")
+joblib.dump(svm_model,"svm_income_model.pkl")
+joblib.dump(column_transformed,"column_transformed.pkl")
