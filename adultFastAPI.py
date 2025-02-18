@@ -1,162 +1,138 @@
-from fastapi import FastAPI, Form
-from fastapi.responses import HTMLResponse
+import numpy as np
+import pandas as pd
+
+from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
+from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+from sklearn.pipeline import Pipeline
+import seaborn as sns
+import matplotlib.pyplot as plt
+import xgboost as xgb
 import joblib
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, confusion_matrix
 
-app = FastAPI()
+# Load dataset
+df = pd.read_csv(r"adult.csv")
 
-# Load the pre-trained model and scaler
-model = joblib.load(r'xgb_balanced_model.pkl')
-scaler = joblib.load(r'scaler.pkl')
+# Replace '?' with NaN
+df.replace('?', np.nan, inplace=True)
 
-# Define the form to collect user data
-@app.get("/", response_class=HTMLResponse)
-async def form_page():
-    html_content = """
-    <html>
-        <head>
-            <title>Salary Prediction</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f4f9;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    flex-direction: column;
-                }
-                .container {
-                    background-color: white;
-                    padding: 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-                    width: 300px;
-                }
-                h2 {
-                    color: #333;
-                }
-                input, select {
-                    width: 100%;
-                    padding: 10px;
-                    margin: 10px 0;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                }
-                button {
-                    width: 100%;
-                    padding: 10px;
-                    background-color: #28a745;
-                    color: white;
-                    border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                }
-                button:hover {
-                    background-color: #218838;
-                }
-                .result {
-                    margin-top: 20px;
-                    font-size: 18px;
-                    font-weight: bold;
-                }
-            </style>
-            <script>
-                async function predictSalary(event) {
-                    event.preventDefault();
-                    const form = document.getElementById('prediction-form');
-                    const formData = new FormData(form);
-                    const response = await fetch('/predict/', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const data = await response.json();
-                    document.getElementById('result').innerHTML = "Predicted Salary: " + data.salary;
-                }
-            </script>
-        </head>
-        <body>
-            <div class="container">
-                <h2>Predict Your Salary</h2>
-                <form id="prediction-form" onsubmit="predictSalary(event)">
-                    <label for="workclass">Workclass</label>
-                    <select name="workclass" id="workclass">
-                        <option value="0">Private</option>
-                        <option value="1">Self-emp-not-inc</option>
-                        <option value="2">Self-emp-inc</option>
-                        <option value="3">Federal-gov</option>
-                        <option value="4">Local-gov</option>
-                        <option value="5">State-gov</option>
-                        <option value="6">Without-pay</option>
-                        <option value="7">Never-worked</option>
-                    </select>
+# Check for missing values
+missing_values_percentage = df.isnull().mean() * 100
+missing_values_percentage_sorted = missing_values_percentage.sort_values(ascending=False)
 
-                    <label for="education">Education</label>
-                    <select name="education" id="education">
-                        <option value="0">Bachelors</option>
-                        <option value="1">Masters</option>
-                        <option value="2">Doctorate</option>
-                        <option value="3">HS-grad</option>
-                        <option value="4">Some-college</option>
-                    </select>
+# Fill missing values for specific columns with the mode
+for col in ['occupation', 'workclass', 'native.country']:
+    df[col].fillna(df[col].mode()[0], inplace=True)
 
-                    <label for="occupation">Occupation</label>
-                    <select name="occupation" id="occupation">
-                        <option value="0">Tech-support</option>
-                        <option value="1">Craft-repair</option>
-                        <option value="2">Other-service</option>
-                        <option value="3">Sales</option>
-                        <option value="4">Exec-managerial</option>
-                    </select>
+# Drop duplicate rows
+df.drop_duplicates(inplace=True)
 
-                    <label for="sex">Sex</label>
-                    <select name="sex" id="sex">
-                        <option value="0">Male</option>
-                        <option value="1">Female</option>
-                    </select>
+# Display categorical and numerical columns
+categorical_columns = df.select_dtypes(include=['object']).columns
+numerical_columns = df.select_dtypes(include=['number']).columns
 
-                    <label for="hours-per-week">Hours per week</label>
-                    <input type="number" name="hours_per_week" id="hours_per_week" required>
+# Display value counts for income categories
+result = pd.DataFrame(df['income'].value_counts(normalize=True).reset_index())
+result.columns = ['income', 'norm_counts']
+result['counts'] = result['norm_counts'] * len(df)
 
-                    <button type="submit">Predict Salary</button>
-                </form>
-                <div id="result" class="result"></div>
-            </div>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+# Map income column to binary values
+df['income'] = df['income'].map({'<=50K': 0, '>50K': 1})
 
-@app.post("/predict/")
-async def predict_salary(workclass: int = Form(...), education: int = Form(...), occupation: int = Form(...),
-                         sex: int = Form(...), hours_per_week: int = Form(...)):
-   
-    input_data = pd.DataFrame({
-        'workclass': [workclass],
-        'education': [education],
-        'occupation': [occupation],
-        'sex': [sex],
-        'hours.per.week': [hours_per_week],
-    })
+# Display the count of each income class
+less_50K = df[df['income'] == 0].shape[0]
+more_50K = df[df['income'] == 1].shape[0]
 
-  
-    required_features = ['age', 'workclass', 'fnlwgt', 'education', 'education.num', 'marital.status',
-                         'occupation', 'relationship', 'race', 'sex', 'capital.gain', 'capital.loss',
-                         'hours.per.week', 'native.country']
+# Normalize and display education counts
+df['education'].replace(['1st-4th', '5th-6th'], 'Primary', inplace=True)
+df['education'].replace(['7th-8th', '9th', '10th', '11th', '12th'], 'Middle-School', inplace=True)
+df['education'].replace(['HS-grad'], 'High-School', inplace=True)
+df['education'].replace(['Some-college', 'Assoc-voc', 'Assoc-acdm'], 'College', inplace=True)
+df['education'].replace(['Bachelors'], 'Bachelors', inplace=True)
+df['education'].replace(['Prof-school', 'Doctorate'], 'Doctorate', inplace=True)
 
-    for col in required_features:
-        if col not in input_data.columns:
-            input_data[col] = 0  
+# Normalize and display race counts
+df['race'].replace(['Asian-Pac-Islander', 'Amer-Indian-Eskimo', 'Other'], 'Others', inplace=True)
 
-  
-    input_data = input_data[required_features]
+# Replace non-US native country values with "Others"
+df['native.country'].loc[df['native.country'] != 'United-States'] = 'Others'
 
-    
-    input_data_scaled = scaler.transform(input_data)
+# Create a new column for capital gain minus loss
+df['capital_diff'] = df['capital.gain'] - df['capital.loss']
+df['capital_diff'] = pd.cut(df['capital_diff'], bins = [-5000, 5000, 100000], labels = ['Low', 'High'])
+df['capital_diff'] = df['capital_diff'].astype('object')
 
-   
-    prediction = model.predict(input_data_scaled)
-   
-    salary = ">50K" if prediction[0] == 1 else "<=50K"
+# Drop unnecessary columns
+df.drop(['capital.gain', 'capital.loss', 'fnlwgt'], axis=1, inplace=True)
 
-    
-    return {"salary": salary}
+# Remove outliers from hours.per.week column
+df = df[~((df["hours.per.week"] > 72) | (df["hours.per.week"] < 20))]
+
+# Split data into features (X) and target (y)
+X = df.drop(columns="income")
+y = df.income
+
+# Train-test split (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+
+# Define categorical and ordinal columns for transformation
+onehot_categorics = ["workclass", "marital.status", "occupation", "relationship", "race", "sex", "native.country"]
+ordinal_categorics = ["education", "capital_diff"]
+
+# Apply transformations to categorical and ordinal columns
+column_transformed = ColumnTransformer(
+    transformers=[
+        ('onehot', OneHotEncoder(handle_unknown="ignore", sparse_output=False), onehot_categorics),
+        ('ordinal', OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1), ordinal_categorics)
+    ],
+    remainder='passthrough'  
+)
+
+# Fit and transform training data, transform test data
+X_train_trans = column_transformed.fit_transform(X_train)
+X_test_trans = column_transformed.transform(X_test)
+
+# Handle class imbalance using oversampling and undersampling
+ros = RandomOverSampler(sampling_strategy=0.5, random_state=42)
+rus = RandomUnderSampler(sampling_strategy=0.7, random_state=42)
+
+X_resampled, y_resampled = ros.fit_resample(X_train_trans, y_train)
+X_resampled, y_resampled = rus.fit_resample(X_resampled, y_resampled)
+
+# Display balanced class distribution and percentage
+income_counts_resampled = pd.Series(y_resampled).value_counts()
+income_percentage_resampled = (income_counts_resampled / len(y_resampled)) * 100
+print("\nBalanced Class Distribution:")
+print(income_counts_resampled)
+print("\nBalanced Class Percentage:")
+print(income_percentage_resampled)
+
+# Convert transformed data back to DataFrame with proper column names
+features = column_transformed.get_feature_names_out()
+X_train = pd.DataFrame(X_train_trans, columns=features, index=X_train.index)
+X_test = pd.DataFrame(X_test_trans, columns=features, index=X_test.index)
+
+# Create and train SVC model in a pipeline with MinMaxScaler
+svm_model = Pipeline([
+    ("scaler", MinMaxScaler()),  # Scaling data with MinMaxScaler
+    ("SVC", SVC(probability=True))  # Support Vector Classifier
+])
+
+# Fit the model to training data
+svm_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = svm_model.predict(X_test)
+
+# Evaluate model performance
+print(classification_report(y_test, y_pred))
+print(confusion_matrix(y_test, y_pred))
+
+# Save the trained model and column transformer for later use
+joblib.dump(svm_model, "svm_income_model.pkl")
+joblib.dump(column_transformed, "column_transformed.pkl")
