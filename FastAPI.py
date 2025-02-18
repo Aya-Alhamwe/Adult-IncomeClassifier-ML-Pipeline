@@ -4,8 +4,8 @@ import joblib
 import pandas as pd
 
 # Load the models
-svm_model = joblib.load(r"C:\Users\ayaaa\Downloads\svm_income_model.pkl")
-column_transformer = joblib.load(r"C:\Users\ayaaa\Downloads\column_transformed.pkl")
+svm_model = joblib.load("svm_income_model.pkl")
+column_transformer = joblib.load("column_transformed.pkl")
 
 # Assuming you have a dataframe or lists for the options:
 # Example: these could come from your training dataset or predefined categories
