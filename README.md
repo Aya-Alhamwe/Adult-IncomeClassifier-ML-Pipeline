@@ -1,85 +1,62 @@
-# 💰 Salary Prediction Web Application 🌟
+# 💰 Income Prediction Model with FastAPI & Machine Learning 🚀
 
-🚀 **This application is live on Render!**
-- 🌐 [Salary Predictor](https://adultproject.onrender.com)
+## 🌟 Overview
+I developed this project to analyze data and predict income using machine learning. The project includes extensive data analysis, a web interface built with FastAPI, and model deployment on Render.
 
-🔍 **What is Render?**
-Render is a cloud platform that allows developers to easily deploy web applications, APIs, databases, and static sites without the complexity of managing infrastructure. It's a popular choice for deploying applications built with frameworks like FastAPI, Django, and Node.js.
+🔗 [🔗 Render App Link](https://adult-incomeclassifier-ml-pipeline.onrender.com)
 
-This project is a web application built with FastAPI that predicts whether a user's salary is above or below $50K based on work-related details.
+---
 
-## 🚀 Features
-- 🖥️ Interactive web interface for user input.
-- 🤖 Machine learning model using XGBoost for salary prediction.
-- ⚙️ Data preprocessing with StandardScaler.
-- ☁️ Deployment-ready with Render.
+## ⚙️ Features
+- 🛠️ **Feature Engineering**: Performed thorough data preprocessing, including:
+  - Replacing missing values.
+  - Simplifying and unifying categorical variables.
+  - Creating new features like "capital_diff".
+- 📊 **Exploratory Data Analysis (EDA)**: Conducted in-depth data analysis with visualizations to uncover patterns and trends.
+- 🎛️ **Feature Scaling & Encoding**: Applied OneHotEncoder, OrdinalEncoder, and MinMaxScaler for efficient data preparation.
+- ⚖️ **Data Balancing**: The dataset was imbalanced, so I experimented with **SMOTE**, but the best results were achieved using **Random OverSampling** and **Random UnderSampling**.
+- 🔍 **Model Experimentation**: Tested various models like Decision Trees, Random Forest, and XGBoost, but the **SVM model delivered the best performance**.
+- ⚡ **Hyperparameter Tuning**: Applied hyperparameter optimization to improve model performance.
+- 🌐 **FastAPI Integration**: Integrated the model into a web application using FastAPI.
+- 🚀 **Deployment**: Deployed the application on Render for easy access.
 
-## 🛠️ Installation
+---
 
-1. **🔍 Clone the repository:**
+## 🔢 Data Insights
+- The dataset is derived from the Adult Income dataset.
+- Extensive data cleaning, missing value handling, and feature engineering were performed to identify key factors influencing income.
+
+---
+
+## 🛠️ Tech Stack
+- 🐍 Python (Pandas, NumPy, Scikit-Learn, XGBoost, imbalanced-learn)
+- 📊 Seaborn, Matplotlib
+- ⚙️ FastAPI
+- 🌐 Render (Deployment)
+
+---
+
+## 🚀 How to Run Locally
 ```bash
-git clone <repository_url>
-cd <repository_name>
-```
+# Clone the repo
+git clone https://github.com/YourUsername/Income-Prediction-FastAPI.git
+cd Income-Prediction-FastAPI
 
-2. **📦 Install dependencies:**
-```bash
+# Install dependencies
 pip install -r requirements.txt
+
+# Run the FastAPI server
+uvicorn app:app --reload
 ```
 
-### `requirements.txt`
-```
-fastapi
-uvicorn
-joblib
-pandas
-scikit-learn
-xgboost
-python-multipart
-```
+Then navigate to `http://127.0.0.1:8000` to interact with the interface.
 
-## ⚙️ How to Run
+---
 
-1. **🚀 Start the FastAPI application:**
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
+## 📈 Sample Visualizations
+🔹 Visual analyses of educational levels, racial distributions, and financial patterns.
+🔹 Plots illustrating class balance improvements after resampling.
 
-2. **🌐 Access the web interface:**
-- Open [http://localhost:8000](http://localhost:8000) in your browser.
 
-## 🧠 Model Training
 
-- The `train_model.py` file loads the `adult.csv` dataset, preprocesses it, balances the classes, trains an XGBoost model, and saves the model and scaler using `joblib`.
-
-### 🛠️ Steps:
-1. **📊 Prepare Dataset:** Missing values are replaced with the mode.
-2. **🔠 Encode Categorical Features:** Label encoding is applied.
-3. **⚖️ Balance Dataset:** Over-sampling and under-sampling techniques are used.
-4. **🏋️ Model Training:** XGBoost with optimized hyperparameters.
-5. **💾 Save Artifacts:** Model and scaler are saved as `xgb_balanced_model.pkl` and `scaler.pkl`.
-
-## 🔍 Usage Guide
-- 🧑‍💼 Select workclass, education, occupation, and sex.
-- ⏱️ Enter hours per week.
-- 🎯 Click "Predict Salary" to get the prediction.
-
-## 📦 Deployment on Render
-
-1. **⚙️ Create a new Render web service.**
-2. **🛠️ Use the following build command:**
-```bash
-uvicorn main:app --host 0.0.0.0 --port $PORT
-```
-3. **🔧 Ensure the following environment variables are set:**
-- `PYTHON_VERSION` to match your environment.
-
-4. **🚀 Deploy and access the web app from the provided URL.**
-
-## ⚠️ Important Notes
-- 🗂️ Ensure `xgb_balanced_model.pkl` and `scaler.pkl` are present in the root directory.
-- 📁 Adjust the file paths if necessary.
-- 🖼️ The app uses basic dropdowns and numeric inputs; consider enhancing for better UX.
-
-🎯 **Enjoy Predicting Salaries!** 💼💵
 
